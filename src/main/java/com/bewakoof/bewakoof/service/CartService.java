@@ -1,6 +1,7 @@
 package com.bewakoof.bewakoof.service;
 
 import com.bewakoof.bewakoof.dto.CartItemDTO;
+import com.bewakoof.bewakoof.dto.CartSummaryDTO;
 import com.bewakoof.bewakoof.model.*;
 import com.bewakoof.bewakoof.repository.CartItemRepository;
 import com.bewakoof.bewakoof.repository.CartRepository;
@@ -148,6 +149,41 @@ public class CartService {
 
         return getCartItems(userDetails);
     }
+
+    public CartSummaryDTO getCartSummary(UserDetails userDetails) {
+        String email = userDetails.getUsername();
+        AppUser user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new UsernameNotFoundException(email);
+        }
+
+        Optional<Cart> cartOptional = cartRepository.findByAppUser_UserId(user.getUserId());
+
+        if (cartOptional.isEmpty()) {
+            return new CartSummaryDTO(0.0, 0.0);
+        }
+
+        Cart cart = cartOptional.get();
+        List<CartItem> items = cart.getCartItems();
+        if (items.isEmpty()) {
+            return new CartSummaryDTO(0.0, 0.0);
+        }
+
+        double totalPrice = 0.0;
+        double totalSavings = 0.0;
+
+        for (CartItem item : items) {
+            double discountedPrice = item.getProduct().getDiscountPrice();  // Assuming `price` is the discounted price
+            double originalPrice = item.getProduct().getProductPrice();  // Assuming this is available
+            int quantity = item.getQuantity();
+
+            totalPrice += discountedPrice * quantity;
+            totalSavings += (originalPrice - discountedPrice) * quantity;
+        }
+
+        return new CartSummaryDTO(totalPrice, totalSavings);
+    }
+
 
 
 

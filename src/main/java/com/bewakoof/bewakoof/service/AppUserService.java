@@ -1,5 +1,6 @@
 package com.bewakoof.bewakoof.service;
 
+import com.bewakoof.bewakoof.enums.UserRole;
 import com.bewakoof.bewakoof.model.AppUser;
 import com.bewakoof.bewakoof.payload.LoginResponse;
 import com.bewakoof.bewakoof.repository.UserRepository;
@@ -33,12 +34,27 @@ public class AppUserService {
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
-    public AppUser register(AppUser appUser) {
+    public LoginResponse register(AppUser appUser) {
+        String password = appUser.getPassword();
         appUser.setPassword(encoder.encode(appUser.getPassword()));
-        return userRepository.save(appUser);
+        if(appUser.getRole() == null){
+            appUser.setRole(UserRole.ROLE_USER);
+        }
+        AppUser user = userRepository.save(appUser);
+
+        if(user == null) {
+            return null;
+        }
+
+
+
+        // Generate token directly without authentication
+        String jwtToken = jwtservice.generateToken(user.getEmail());
+        return new LoginResponse(jwtToken, user);
     }
 
     public LoginResponse authenticate(AppUser user) {
+        System.out.println(user);
         Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
 
         if(auth.isAuthenticated()) {

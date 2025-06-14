@@ -2,6 +2,7 @@ package com.bewakoof.bewakoof.controller;
 
 import com.bewakoof.bewakoof.dto.AddCartItemRequestDTO;
 import com.bewakoof.bewakoof.dto.CartItemDTO;
+import com.bewakoof.bewakoof.dto.CartSummaryDTO;
 import com.bewakoof.bewakoof.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,5 +31,10 @@ public class CartController {
     @DeleteMapping("/cart/cart-item/{id}")
     public List<CartItemDTO> deleteCartItem(@AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long cartItemId){
         return cartService.deleteCartItem(userDetails , cartItemId);
+    }
+
+    @GetMapping("/cart-summary")
+    public CartSummaryDTO getCartSummary(@AuthenticationPrincipal UserDetails userDetails){
+        return cartService.getCartSummary(userDetails);
     }
 }

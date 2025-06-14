@@ -7,6 +7,8 @@ import com.bewakoof.bewakoof.model.SizeVariant;
 import com.bewakoof.bewakoof.service.ImageService;
 import com.bewakoof.bewakoof.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -91,6 +93,18 @@ public class ProductController {
     @DeleteMapping("/color/size/{sizeId}")
     public ProductWithReviewsDTO deleteSizeVariant(@PathVariable Long sizeId) {
         return productService.deleteSizeVariant(sizeId);
+    }
+
+
+    //search by name or brand or category and description for effective searching
+    @GetMapping("/search/products/{searchTerm}")
+    public List<ProductWithReviewsDTO> searchProducts(@PathVariable String searchTerm) {
+        return productService.searchProducts(searchTerm);
+    }
+
+    @GetMapping("/recent-products")
+    public List<ProductWithReviewsDTO> getRecentProducts(@AuthenticationPrincipal UserDetails userDetails) {
+        return productService.getRecentProducts(userDetails);
     }
 
 }   

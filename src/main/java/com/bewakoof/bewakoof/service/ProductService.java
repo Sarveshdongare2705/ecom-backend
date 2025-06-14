@@ -2,19 +2,16 @@ package com.bewakoof.bewakoof.service;
 
 import com.bewakoof.bewakoof.dto.ProductWithReviewsDTO;
 import com.bewakoof.bewakoof.dto.ReviewDTO;
-import com.bewakoof.bewakoof.model.ColorVariant;
-import com.bewakoof.bewakoof.model.Product;
-import com.bewakoof.bewakoof.model.Review;
-import com.bewakoof.bewakoof.model.SizeVariant;
-import com.bewakoof.bewakoof.repository.ColorVariantRepository;
-import com.bewakoof.bewakoof.repository.ProductRepository;
-import com.bewakoof.bewakoof.repository.SizeVariantRepository;
+import com.bewakoof.bewakoof.model.*;
+import com.bewakoof.bewakoof.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +25,12 @@ public class ProductService {
 
     @Autowired
     private SizeVariantRepository sizeVariantRepository;
+
+    @Autowired
+    private SearchHistoryRepository searchHistoryRepository;
+    @Autowired
+    private UserRepository userRepository;
+
 
     public List<ProductWithReviewsDTO> getAllProducts() {
         List<Product> products = productRepository.findAll();
@@ -58,9 +61,12 @@ public class ProductService {
 
         existingProduct.setProductName(updatedProduct.getProductName());
         existingProduct.setProductDescription(updatedProduct.getProductDescription());
-        existingProduct.setProductBrand(updatedProduct.getProductBrand());
         existingProduct.setProductPrice(updatedProduct.getProductPrice());
         existingProduct.setDiscountPercent(updatedProduct.getDiscountPercent());
+        existingProduct.setAverageRating(updatedProduct.getAverageRating());
+        existingProduct.setTotalReviews(updatedProduct.getTotalReviews());
+        existingProduct.setProductBrand(updatedProduct.getProductBrand());
+
 
         // colors and reviews not updated here (handled in separate endpoints)
         Product savedProduct = productRepository.save(existingProduct);
@@ -171,6 +177,41 @@ public class ProductService {
     }
 
 
+
+    //search feature
+    public List<ProductWithReviewsDTO> searchProducts(String searchedTerm) {
+
+        List<Product> matchedProducts = productRepository.searchByTerm(searchedTerm.toLowerCase());
+        return matchedProducts.stream().map(product -> convertToProductWithReviewsDTO(product)).collect(Collectors.toList());
+    }
+
+    //get recent products based on search histroy
+    public List<ProductWithReviewsDTO> getRecentProducts(UserDetails userDetails) {
+        String email = userDetails.getUsername();
+        AppUser user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new UsernameNotFoundException(email);
+        }
+        
+        List<SearchHistory> recentSearches = searchHistoryRepository.findTop5SearchOfUser(user);
+        Set<Long> addedProductIds = new HashSet<>();
+
+        List<ProductWithReviewsDTO> results = new ArrayList<>();
+
+        for (SearchHistory history : recentSearches) {
+            List<ProductWithReviewsDTO> matches = searchProducts(history.getText());
+            for (ProductWithReviewsDTO product : matches) {
+                if (addedProductIds.add(product.getProductId())) {
+                    results.add(product);
+                }
+            }
+        }
+
+        return results;
+    }
+
+
+
     // Helper method to convert Product to ProductWithReviewsDTO
     private ProductWithReviewsDTO convertToProductWithReviewsDTO(Product product) {
         ProductWithReviewsDTO dto = new ProductWithReviewsDTO();
@@ -179,21 +220,69 @@ public class ProductService {
         dto.setProductDescription(product.getProductDescription());
         dto.setProductBrand(product.getProductBrand());
         dto.setProductPrice(product.getProductPrice());
-        dto.setDiscountPrice(product.getDiscountPrice());
         dto.setDiscountPercent(product.getDiscountPercent());
+        dto.setDiscountPrice(product.getDiscountPrice());
         dto.setCategory(product.getCategory());
+        dto.setMaterial(product.getMaterial());
+        dto.setMainCategory(product.getMainCategory());
+        dto.setIsPlusSize(product.getIsPlusSize());
+        dto.setIsCustomizable(product.getIsCustomizable());
+
+        // Target Demographics
+        dto.setTargetGender(product.getTargetGender());
+        dto.setTargetAgeGroup(product.getTargetAgeGroup());
+
+        // Product Specifications
+        dto.setFitType(product.getFitType());
+        dto.setNeckType(product.getNeckType());
+        dto.setSleeveType(product.getSleeveType());
+        dto.setDesignType(product.getDesignType());
+        dto.setOccasion(product.getOccasion());
+
+        // Offers and Promotions
+        dto.setOfferText(product.getOfferText());
+        dto.setHasComboOffer(product.getHasComboOffer());
+        dto.setComboQuantity(product.getComboQuantity());
+        dto.setComboPrice(product.getComboPrice());
+
+        // Social Proof
+        dto.setRecentPurchases(product.getRecentPurchases());
+        dto.setAverageRating(product.getAverageRating());
+        dto.setTotalReviews(product.getTotalReviews());
+
+        // Inventory
+        dto.setTotalStock(product.getTotalStock());
+        dto.setSoldCount(product.getSoldCount());
+        dto.setIsActive(product.getIsActive());
+
+        // Official Merchandise
+        dto.setIsOfficialMerchandise(product.getIsOfficialMerchandise());
+        dto.setLicenseInfo(product.getLicenseInfo());
+
+        // Shipping and Returns
+        dto.setIsFreeShippingEligible(product.getIsFreeShippingEligible());
+        dto.setReturnPolicyDays(product.getReturnPolicyDays());
+        dto.setIsExchangeable(product.getIsExchangeable());
+
+        // SEO
+        dto.setSlug(product.getSlug());
+
+        // Timestamps
+        dto.setCreatedAt(product.getCreatedAt());
+        dto.setUpdatedAt(product.getUpdatedAt());
+
+        // Relationships
         dto.setColorVariants(product.getColorVariants());
-        // Handle possible null reviews
         List<ReviewDTO> reviewDTOs = Optional.ofNullable(product.getReviews())
                 .orElse(Collections.emptyList())
                 .stream()
                 .map(this::convertToReviewDTO)
                 .collect(Collectors.toList());
-
         dto.setReviews(reviewDTOs);
 
         return dto;
     }
+
 
 
     // Helper method to convert Review to ReviewDTO

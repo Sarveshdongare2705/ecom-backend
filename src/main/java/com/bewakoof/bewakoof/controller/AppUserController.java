@@ -21,21 +21,25 @@ public class AppUserController {
     @Autowired
     private AppUserService appUserService;
 
-
     @PostMapping("/user/register")
-    public AppUser register(@RequestBody AppUser appUser) {
-        return appUserService.register(appUser);
-    }
-
-    @PostMapping("/user/login")
-    public ResponseEntity<?> login(@RequestBody AppUser appUser) {
-        LoginResponse response = appUserService.authenticate(appUser);
-
+    public ResponseEntity<?> register(@RequestBody AppUser appUser) {
+        LoginResponse response = appUserService.register(appUser);
         if (response.getUser() == null) {
             return new ResponseEntity<>("Invalid credentials", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+    @PostMapping("/user/login")
+    public ResponseEntity<?> login(@RequestBody AppUser appUser) {
+        LoginResponse response = appUserService.authenticate(appUser);
+        if (response.getUser() == null) {
+            return new ResponseEntity<>("Invalid credentials", HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
+
 
     @PutMapping("/update-profile")
     public AppUser updateProfile(@AuthenticationPrincipal UserDetails userDetails ,  @RequestBody AppUser updateData) {

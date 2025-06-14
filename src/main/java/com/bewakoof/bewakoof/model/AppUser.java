@@ -1,5 +1,6 @@
 package com.bewakoof.bewakoof.model;
 
+import com.bewakoof.bewakoof.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,6 +15,10 @@ public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
+
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
+
 
     @Column(nullable = false)
     private String userName;

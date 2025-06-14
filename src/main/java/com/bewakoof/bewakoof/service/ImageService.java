@@ -92,17 +92,64 @@ public class ImageService {
         dto.setProductDescription(product.getProductDescription());
         dto.setProductBrand(product.getProductBrand());
         dto.setProductPrice(product.getProductPrice());
-        dto.setDiscountPrice(product.getDiscountPrice());
         dto.setDiscountPercent(product.getDiscountPercent());
+        dto.setDiscountPrice(product.getDiscountPrice());
         dto.setCategory(product.getCategory());
+        dto.setMaterial(product.getMaterial());
+
+        // Target Demographics
+        dto.setTargetGender(product.getTargetGender());
+        dto.setTargetAgeGroup(product.getTargetAgeGroup());
+
+        // Product Specifications
+        dto.setFitType(product.getFitType());
+        dto.setNeckType(product.getNeckType());
+        dto.setSleeveType(product.getSleeveType());
+        dto.setDesignType(product.getDesignType());
+        dto.setOccasion(product.getOccasion());
+
+        // Offers and Promotions
+        dto.setOfferText(product.getOfferText());
+        dto.setHasComboOffer(product.getHasComboOffer());
+        dto.setComboQuantity(product.getComboQuantity());
+        dto.setComboPrice(product.getComboPrice());
+
+        // Social Proof
+        dto.setRecentPurchases(product.getRecentPurchases());
+        dto.setAverageRating(product.getAverageRating());
+        dto.setTotalReviews(product.getTotalReviews());
+
+        // Inventory
+        dto.setTotalStock(product.getTotalStock());
+        dto.setSoldCount(product.getSoldCount());
+        dto.setIsActive(product.getIsActive());
+
+        // Official Merchandise
+        dto.setIsOfficialMerchandise(product.getIsOfficialMerchandise());
+        dto.setLicenseInfo(product.getLicenseInfo());
+
+        // Shipping and Returns
+        dto.setIsFreeShippingEligible(product.getIsFreeShippingEligible());
+        dto.setReturnPolicyDays(product.getReturnPolicyDays());
+        dto.setIsExchangeable(product.getIsExchangeable());
+
+        // SEO
+        dto.setSlug(product.getSlug());
+        dto.setMainCategory(product.getMainCategory());
+        dto.setIsPlusSize(product.getIsPlusSize());
+        dto.setIsCustomizable(product.getIsCustomizable());
+
+        // Timestamps
+        dto.setCreatedAt(product.getCreatedAt());
+        dto.setUpdatedAt(product.getUpdatedAt());
+
+        // Relationships
         dto.setColorVariants(product.getColorVariants());
-        // Handle possible null reviews
         List<ReviewDTO> reviewDTOs = Optional.ofNullable(product.getReviews())
                 .orElse(Collections.emptyList())
                 .stream()
                 .map(this::convertToReviewDTO)
                 .collect(Collectors.toList());
-
         dto.setReviews(reviewDTOs);
 
         return dto;
