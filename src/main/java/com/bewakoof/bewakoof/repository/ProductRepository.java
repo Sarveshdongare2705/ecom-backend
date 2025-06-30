@@ -1,5 +1,6 @@
 package com.bewakoof.bewakoof.repository;
 
+import com.bewakoof.bewakoof.enums.Gender;
 import com.bewakoof.bewakoof.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,5 +23,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "OR LOWER(p.targetGender) LIKE %:term% " +
             "OR LOWER(p.targetAgeGroup) LIKE %:term%")
     List<Product> searchByTerm(@Param("term") String term);
+
+    List<Product> findByTargetGenderIn(List<Gender> genders);
+
 
 }

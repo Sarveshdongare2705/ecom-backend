@@ -34,6 +34,11 @@ public class CartItem {
     private int quantity = 1;
 
     @ManyToOne
+    @JoinColumn(name = "avail_id")
+    @JsonBackReference("availability")
+    private ProductAvailability productAvailability;
+
+    @ManyToOne
     @JoinColumn(name = "cart_id")
     @JsonBackReference("cart")
     private Cart cart;

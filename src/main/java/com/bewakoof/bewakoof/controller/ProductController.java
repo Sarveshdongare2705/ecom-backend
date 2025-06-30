@@ -1,6 +1,5 @@
 package com.bewakoof.bewakoof.controller;
 
-import com.bewakoof.bewakoof.dto.ProductWithReviewsDTO;
 import com.bewakoof.bewakoof.model.ColorVariant;
 import com.bewakoof.bewakoof.model.Product;
 import com.bewakoof.bewakoof.model.SizeVariant;
@@ -23,88 +22,91 @@ public class ProductController {
     @Autowired
     private ImageService imageService;
 
-    //product endpoints
+    // product endpoints
 
     @GetMapping("/products/all")
-    public List<ProductWithReviewsDTO> getAllProducts() {
+    public List<Product> getAllProducts() {
         return productService.getAllProducts();
     }
+
+    @GetMapping("/products")
+    public List<Product> getAllProducts(@RequestParam(required = false) Boolean choice) {
+        return productService.getAllProductsByChoice(choice);
+    }
+
     @GetMapping("/product/{id}")
-    public ProductWithReviewsDTO getProductById(@PathVariable Long id) {
+    public Product getProductById(@PathVariable Long id) {
         return productService.getProductById(id);
     }
+
     @PostMapping("/products/add")
-    public ProductWithReviewsDTO addProduct(@RequestBody Product product) {
-        return productService.addProduct(product);
+    public void addProduct(@RequestBody Product product) {
+        productService.addProduct(product);
     }
+
     @PutMapping("/product/{id}")
-    public ProductWithReviewsDTO updateProduct(@PathVariable Long id, @RequestBody Product product) {
-        return productService.updateProduct(id, product);
+    public void updateProduct(@PathVariable Long id, @RequestBody Product product) {
+        productService.updateProduct(id, product);
     }
+
     @DeleteMapping("/product/{id}")
     public boolean deleteProduct(@PathVariable Long id) {
         return productService.deleteProduct(id);
     }
 
-
-    //color variant endpoints
+    // color variant endpoints
     @PostMapping("/product/{productId}/colors")
-    public ProductWithReviewsDTO addProductColors(@PathVariable Long productId, @RequestBody ColorVariant variant) {
-        return productService.addColorVariant(productId , variant);
+    public void addProductColors(@PathVariable Long productId, @RequestBody ColorVariant variant) {
+        productService.addColorVariant(productId, variant);
     }
 
     @PutMapping("/colors/{colorId}")
-    public ProductWithReviewsDTO updateProductColors(@PathVariable Long colorId, @RequestBody ColorVariant variant) {
-        return productService.updateColorVariant(colorId , variant);
+    public void updateProductColors(@PathVariable Long colorId, @RequestBody ColorVariant variant) {
+        productService.updateColorVariant(colorId, variant);
     }
 
     @DeleteMapping("/colors/{colorId}")
-    public ProductWithReviewsDTO deleteProductColors(@PathVariable Long colorId) {
-        return productService.deleteColorVariant(colorId);
+    public void deleteProductColors(@PathVariable Long colorId) {
+        productService.deleteColorVariant(colorId);
     }
 
-
-    //images
+    // images
     @PostMapping("/color/{colorVariantId}/image")
-    public ProductWithReviewsDTO addProductImage(@PathVariable Long colorVariantId, @RequestPart MultipartFile file) {
-        return imageService.uploadImage(colorVariantId, file);
+    public void addProductImage(@PathVariable Long colorVariantId, @RequestPart MultipartFile file) {
+        imageService.uploadImage(colorVariantId, file);
     }
 
     @DeleteMapping("/images/{imageId}")
-    public ProductWithReviewsDTO deleteProductImage(@PathVariable Long imageId) {
-        return imageService.deleteImage(imageId);
+    public void deleteProductImage(@PathVariable Long imageId) {
+        imageService.deleteImage(imageId);
     }
 
-
     @PostMapping("/color/{variantId}/size")
-    public ProductWithReviewsDTO addSizeVariant(@PathVariable Long variantId, @RequestBody SizeVariant sizeVariant) {
-        return productService.addSizeVariant(variantId, sizeVariant);
+    public void addSizeVariant(@PathVariable Long variantId, @RequestBody SizeVariant sizeVariant) {
+        productService.addSizeVariant(variantId, sizeVariant);
     }
 
     @PutMapping("/color/{variantId}/size/{sizeId}")
-    public ProductWithReviewsDTO updateSizeVariant(
+    public void updateSizeVariant(
             @PathVariable Long variantId,
             @PathVariable Long sizeId,
-            @RequestBody SizeVariant sizeVariant
-    ) {
-        return productService.updateSizeVariant(variantId, sizeId, sizeVariant);
+            @RequestBody SizeVariant sizeVariant) {
+        productService.updateSizeVariant(variantId, sizeId, sizeVariant);
     }
 
     @DeleteMapping("/color/size/{sizeId}")
-    public ProductWithReviewsDTO deleteSizeVariant(@PathVariable Long sizeId) {
-        return productService.deleteSizeVariant(sizeId);
+    public void deleteSizeVariant(@PathVariable Long sizeId) {
+        productService.deleteSizeVariant(sizeId);
     }
 
-
-    //search by name or brand or category and description for effective searching
     @GetMapping("/search/products/{searchTerm}")
-    public List<ProductWithReviewsDTO> searchProducts(@PathVariable String searchTerm) {
-        return productService.searchProducts(searchTerm);
+    public List<Product> searchProducts(@PathVariable String searchTerm , @RequestParam(required = false) Boolean choice) {
+        return productService.searchProducts(searchTerm , choice);
     }
 
     @GetMapping("/recent-products")
-    public List<ProductWithReviewsDTO> getRecentProducts(@AuthenticationPrincipal UserDetails userDetails) {
-        return productService.getRecentProducts(userDetails);
+    public List<Product> getRecentProducts(@AuthenticationPrincipal UserDetails userDetails , @RequestParam(required = false) Boolean choice) {
+        return productService.getRecentProducts(userDetails , choice);
     }
 
-}   
+}

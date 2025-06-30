@@ -1,27 +1,26 @@
 package com.bewakoof.bewakoof.dto;
 
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
 public class CartSummaryDTO {
-    private double totalPrice;
-    private double totalSavings;
+    private Double totalPrice;
+    private Double totalSavings;
+    private Double totalDeliveryCharges;
+    private Double finalAmount;
 
-    public CartSummaryDTO(double totalPrice, double totalSavings) {
+    public CartSummaryDTO(Double totalPrice , Double totalSavings , Double totalDeliveryCharges){
         this.totalPrice = totalPrice;
         this.totalSavings = totalSavings;
+        this.totalDeliveryCharges = totalDeliveryCharges;
     }
-
-    public double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public double getTotalSavings() {
-        return totalSavings;
-    }
-
-    public void setTotalPrice(double totalPrice) {
-        this.totalPrice = totalPrice;
-    }
-
-    public void setTotalSavings(double totalSavings) {
-        this.totalSavings = totalSavings;
+    
+    @PrePersist
+    @PreUpdate
+    public void calculateFinalAmount(){
+        this.finalAmount = this.totalPrice + this.totalDeliveryCharges;
     }
 }

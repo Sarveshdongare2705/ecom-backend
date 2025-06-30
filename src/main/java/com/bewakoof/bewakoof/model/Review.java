@@ -17,6 +17,7 @@ public class Review {
     private Long reviewId;
     private int rating;
     private String comment;
+    private Boolean recommend;
 
     @ManyToOne
     @JoinColumn(name = "product_id")

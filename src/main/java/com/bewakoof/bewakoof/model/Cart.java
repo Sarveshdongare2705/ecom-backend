@@ -25,4 +25,12 @@ public class Cart {
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "userId")
     private AppUser appUser;
+
+    private Integer totalQuantity = 0;
+    private Double totalPrice = 0.0;
+
+    @ManyToOne
+    @JoinColumn(name = "selected_address_id")
+    private Address selectedAddress;
+
 }

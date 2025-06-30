@@ -6,26 +6,22 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-public class SizeVariant {
+public class ProductAvailability {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long sizeId;
-
-    @Column(nullable = false)
-    private String size; // e.g., "S", "M", "L", "XL"
-
-    @Column(nullable = false)
-    private int quantity;
-    
-    private boolean available;
+    private Long availId;
+    private Integer pincode;
+    private Double deliveryCharge;
+    private Integer estimatedDeliveryDays;
+    private Integer returnDays;
 
     @ManyToOne
-    @JoinColumn(name = "color_id")
-    @JsonBackReference("size")
-    private ColorVariant colorVariant;
+    @JoinColumn(name = "product_id")
+    @JsonBackReference("productAvailable")
+    private Product product;
 }

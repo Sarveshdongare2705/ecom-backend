@@ -4,6 +4,7 @@ import com.bewakoof.bewakoof.service.JWTService;
 import com.bewakoof.bewakoof.service.MyUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 public class JWTFilter extends OncePerRequestFilter {
@@ -24,11 +26,12 @@ public class JWTFilter extends OncePerRequestFilter {
     private JWTService jwtService;
 
     @Autowired
-    ApplicationContext context;
+    private ApplicationContext context;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        //from client side we get Bearer and then token
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
         String token = null;
@@ -38,18 +41,36 @@ public class JWTFilter extends OncePerRequestFilter {
             token = authHeader.substring(7);
             username = jwtService.extractUserName(token);
         }
-        if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if(token==null){
+            Cookie[] cookies = request.getCookies();
+            if(cookies!=null){
+                token = Arrays.stream(cookies)
+                        .filter(c -> "token".equals(c.getName()))
+                        .findFirst()
+                        .map(Cookie::getValue)
+                        .orElse(null);
+            }
+        }
+        try {
+            if (token != null && token.split("\\.").length == 3) {
+                username = jwtService.extractUserName(token);
+            }
+        } catch (Exception e) {
+            logger.error("Invalid JWT: " + e.getMessage());
+        }
 
-            UserDetails userDetails = context.getBean(MyUserDetailsService.class).loadUserByUsername(username);
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = context.getBean(MyUserDetailsService.class)
+                    .loadUserByUsername(username);
 
             if (jwtService.validateToken(token, userDetails)) {
-                //token valid
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                //this token should also know about the request
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
+
         filterChain.doFilter(request, response);
     }
 }
